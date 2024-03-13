@@ -16,7 +16,9 @@ import java.util.TimeZone;
 
 @WebServlet(value = "/*")
 public class TimeServlet extends HttpServlet {
-    private Date currentDateTimeUTC = Date.from(Instant.now());
+    private final Date currentDateTimeUTC = Date.from(Instant.now());
+    private final String query = "timezone";
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -35,23 +37,26 @@ public class TimeServlet extends HttpServlet {
         out.close();
     }
 
-    private String parseTimezone(HttpServletRequest req){
-        if (req.getParameterMap().containsKey("timezone")){
-            return "+" + req.getParameter("timezone");
-        }else {
+    private String parseTimezone(HttpServletRequest req) {
+        String parameter = req.getParameter(query);
+        if (req.getParameterMap().containsKey(query)) {
+            String[] parametersContent = parameter.split(" ");
+            return "+" + parametersContent[parametersContent.length - 1];
+        } else {
             return "";
         }
     }
-    private String parseCurrentDateTime(HttpServletRequest req){
-        String parameter = req.getParameter("timezone");
+
+    private String parseCurrentDateTime(HttpServletRequest req) {
+        String parameter = req.getParameter(query);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         String currentTimeUTC = dateFormat.format(currentDateTimeUTC);
-        if (req.getParameterMap().containsKey("timezone")){
+        if (req.getParameterMap().containsKey(query)) {
             int diffHours = 0;
-            if (parameter.length()>1){
+            if (parameter.length() > 1) {
                 String[] parametersContent = parameter.split(" ");
-                diffHours = Integer.parseInt(parametersContent[parametersContent.length-1]);
+                diffHours = Integer.parseInt(parametersContent[parametersContent.length - 1]);
             } else {
                 diffHours = Integer.parseInt(parameter);
             }
@@ -59,7 +64,7 @@ public class TimeServlet extends HttpServlet {
             Date currentDateTime = Date.from(Instant.now().plus(duration));
 
             return dateFormat.format(currentDateTime);
-        }else {
+        } else {
             return currentTimeUTC;
         }
     }
